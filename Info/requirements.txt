@@ -1,0 +1,4 @@
+﻿python-telegram-bot
+dataclasses-json
+icecream
+python-dateutil
