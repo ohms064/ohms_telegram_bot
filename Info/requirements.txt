@@ -3,3 +3,4 @@ dataclasses-json
 icecream
 python-dateutil
 thefuzz
+firebase-admin

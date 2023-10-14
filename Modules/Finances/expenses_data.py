@@ -8,6 +8,7 @@ class Expenses:
     quantity: float = 0
     reason: str = ""
     tag: str = ""
+    filter: str = ""
 
     def get_user_repr(self) -> str:
         time = self.time.strftime('%d/%m/%Y')
