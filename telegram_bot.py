@@ -3,15 +3,23 @@ from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 import json
 from TelegramModules.Finances.expenses_telegram_commands import save_expense, load_expense
 from TelegramModules.Finances.expenses_telegram_conversation import get_conversation_handler_expenses
+import os
 
 
 async def hello(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     await update.message.reply_text(f'Hello {update.effective_user.first_name}')
 
-with open("Info/api_keys.json", "r", encoding="utf-8-sig") as api_keys_file:
-    api_keys = json.load(api_keys_file)
+FILENAME = "Info/api_keys.json"
+telegram_token = ""
 
-app = ApplicationBuilder().token(api_keys["api_id"]).build()
+if os.path.isfile(FILENAME):
+    with open(FILENAME, "r", encoding="utf-8-sig") as api_keys_file:
+        api_keys = json.load(api_keys_file)
+        telegram_token = api_keys["api_id"]
+else:
+    telegram_token = os.getenv("telegram_key")
+
+app = ApplicationBuilder().token(telegram_token).build()
 
 app.add_handler(CommandHandler("hello", hello))
 app.add_handler(CommandHandler("gasto", save_expense))
