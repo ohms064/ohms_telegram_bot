@@ -22,10 +22,13 @@ def get_filename(user_id: int, month: int = 0, year: int = 0, date: datetime = N
     return f"{user_id}_{month}_{year}_expenses.json"
 
 
-def open_expenses_file(filename: str):
+def open_expenses_file(filename: str) -> list[Expenses]:
+    result: list[Expenses] = []
     with open(filename, "r") as file:
-        result = json.load(file, object_hook=decode_time)
-    return [Expenses(**e) for e in result]
+        intermediate = json.load(file, object_hook=decode_time)
+    for key in intermediate:
+        result.append(Expenses(**key))
+    return result
 
 
 def get_expenses(user_id: int, month: int, year: int, tag: str = ""):

@@ -2,3 +2,4 @@
 dataclasses-json
 icecream
 python-dateutil
+thefuzz
