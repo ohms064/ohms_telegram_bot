@@ -70,3 +70,14 @@ def write_expense(user_id: int, expense_to_write: Expenses):
 
     with open(FILENAME, "w") as expense_file:
         json.dump(expenses, expense_file, default=str, indent=4, sort_keys=True)
+
+
+def delete_expense(user_id: int, month: int, year: int, expense_id: int) -> None:
+    filename = get_filename(user_id, month, year)
+    expenses = get_expenses(user_id, month, year)
+    if expense_id not in expenses:
+        ic("Couldn't delete expense because it couldn't be found")
+        return
+    del expenses[expense_id]
+    with open(filename, "w") as file:
+        json.dump(expenses, file)

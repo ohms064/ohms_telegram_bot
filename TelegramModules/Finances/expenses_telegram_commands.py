@@ -2,6 +2,8 @@
 from dateutil import relativedelta
 from telegram import Update
 from telegram.ext import ContextTypes
+
+from TelegramModules.Finances.expenses_telegram_utils import create_expense_keyboard_markup
 from TelegramModules.Security.dumb_security import check_security
 from Modules.Finances.expenses_data import Expenses
 from Modules.Finances.expenses_commonutils import get_expenses, write_expense
@@ -63,18 +65,16 @@ async def load_expense(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     if len(context.args) > 0:
         tag = context.args[0]
 
-    result = {}
+    saved_expenses = get_expenses(user_id, date.month, date.year, tag)
 
-    expenses = get_expenses(user_id, date.month, date.year, tag)
-    result[f"{date.month}_{date.year}"] = expenses
-    while len(expenses) > 0:
+    await update.effective_message.reply_text("Éstos son los gastos:")
+    for key, expense in saved_expenses.items():
+        keyboard_markup = create_expense_keyboard_markup(user_id, expense.time.month, expense.time.year, key)
+        await update.message.reply_text(f"{expense.get_user_repr()}", reply_markup=keyboard_markup)
+
+    while len(saved_expenses) > 0:
         date += relativedelta.relativedelta(months=1)
-        expenses = get_expenses(user_id, date.month, date.year, tag)
-        result[f"{date.month}_{date.year}"] = expenses
-    for monthly_key, month_expenses in result.items():
-        for expense_key, expense in month_expenses.items():
-            pretty = result[monthly_key][expense_key].get_user_repr()
-            await update.effective_message.reply_text(f"Éstos son los gastos: \n{pretty}")
+        saved_expenses = get_expenses(user_id, date.month, date.year, tag)
 
 
 async def save_expense_start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:

@@ -4,3 +4,4 @@ icecream
 python-dateutil
 thefuzz
 firebase-admin
+python-telegram-bot[callback-data]

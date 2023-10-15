@@ -1,11 +1,13 @@
 ﻿import datetime
-from Modules.Misc.data_utils import fuzzy_month_to_int, int_to_month
+from Modules.Misc.data_utils import fuzzy_month_to_int
 from dateutil import relativedelta
 from telegram import ReplyKeyboardMarkup, Update
 from telegram.ext import ContextTypes, ConversationHandler, CommandHandler, MessageHandler, filters
 from Modules.Finances.expenses_data import Expenses
 from Modules.Finances.expenses_commonutils import get_expenses, write_expense
 from icecream import ic
+
+from TelegramModules.Finances.expenses_telegram_utils import create_expense_keyboard_markup
 
 actions_keyboard = [["Nuevo"], ["Editar", "Borrar"]]
 edit_keyboard = ["Cantidad", "Razón", "Tag"]
@@ -409,7 +411,10 @@ async def show_results(update: Update, context: ContextTypes.DEFAULT_TYPE) -> in
         result = {1: filter_expense}
 
     for key, expense in result.items():
-        await update.effective_message.reply_text(expense.get_user_repr())
+        await (update.effective_message
+               .reply_text(expense.get_user_repr(),
+                           reply_markup=create_expense_keyboard_markup(user_id, expense.time.month,
+                                                                       expense.time.year, key)))
         # TODO: Add buttons to delete or edit expense
 
     if len(result) == 0:
