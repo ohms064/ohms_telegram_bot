@@ -398,17 +398,17 @@ async def show_results(update: Update, context: ContextTypes.DEFAULT_TYPE) -> in
     response = context.match.string
 
     filter_expense: Expenses = get_session_expense(user_id)
-    result: list[Expenses] = get_expenses(user_id, filter_expense.time.month, filter_expense.time.year, filter_expense.tag)
+    result: dict[int, Expenses] = get_expenses(user_id, filter_expense.time.month, filter_expense.time.year, filter_expense.tag)
 
     if "d" in filter_expense.filter:
-        result = [exp for exp in result if exp.time.strftime('%d/%m/%Y') == filter_expense.time.strftime('%d/%m/%Y')]
+        result = {key: exp for key, exp in result.items() if exp.time.strftime('%d/%m/%Y') == filter_expense.time.strftime('%d/%m/%Y')}
 
     if response == "sí" or response == "si":
-        filter_expense.quantity = sum(exp.quantity for exp in result)
-        filter_expense.tag = sum(f"{exp.tag} " for exp in result)
-        result = [filter_expense]
+        filter_expense.quantity = sum(exp.quantity for key, exp in result.items())
+        filter_expense.tag = sum(f"{exp.tag} " for key, exp in result.items())
+        result = {1: filter_expense}
 
-    for expense in result:
+    for key, expense in result.items():
         await update.effective_message.reply_text(expense.get_user_repr())
         # TODO: Add buttons to delete or edit expense
 

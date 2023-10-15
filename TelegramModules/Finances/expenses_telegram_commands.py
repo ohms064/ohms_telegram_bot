@@ -63,16 +63,18 @@ async def load_expense(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     if len(context.args) > 0:
         tag = context.args[0]
 
-    result = []
+    result = {}
 
     expenses = get_expenses(user_id, date.month, date.year, tag)
-    result += expenses
+    result[f"{date.month}_{date.year}"] = expenses
     while len(expenses) > 0:
         date += relativedelta.relativedelta(months=1)
         expenses = get_expenses(user_id, date.month, date.year, tag)
-        result += expenses
-    pretty = "\n".join([pretty.get_user_repr() for pretty in result])
-    await update.effective_message.reply_text(f"Éstos son los gastos: \n{pretty}")
+        result[f"{date.month}_{date.year}"] = expenses
+    for monthly_key, month_expenses in result.items():
+        for expense_key, expense in month_expenses.items():
+            pretty = result[monthly_key][expense_key].get_user_repr()
+            await update.effective_message.reply_text(f"Éstos son los gastos: \n{pretty}")
 
 
 async def save_expense_start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
