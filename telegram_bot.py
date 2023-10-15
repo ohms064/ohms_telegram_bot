@@ -2,7 +2,8 @@
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 import json
 from TelegramModules.Finances.expenses_telegram_commands import save_expense, load_expense
-from TelegramModules.Finances.expenses_telegram_conversation import get_conversation_handler_expenses_add
+from TelegramModules.Finances.expenses_telegram_conversation import (get_conversation_handler_expenses_add, 
+                                                                     get_conversation_handler_expenses_edit)
 import os
 
 
@@ -25,5 +26,6 @@ app.add_handler(CommandHandler("hello", hello))
 app.add_handler(CommandHandler("gasto", save_expense))
 app.add_handler(CommandHandler("leer", load_expense))
 app.add_handler(get_conversation_handler_expenses_add())
+app.add_handler(get_conversation_handler_expenses_edit())
 
 app.run_polling()

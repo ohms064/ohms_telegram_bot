@@ -31,7 +31,7 @@ def open_expenses_file(filename: str) -> list[Expenses]:
     return result
 
 
-def get_expenses(user_id: int, month: int, year: int, tag: str = ""):
+def get_expenses(user_id: int, month: int, year: int, tag: str = "") -> list[Expenses]:
     ic(f"Getting expenses for {month}/{year}. With tag {tag}.")
     FILENAME = get_filename(user_id, month, year)
     result = []
