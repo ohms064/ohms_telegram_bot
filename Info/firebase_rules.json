@@ -1,0 +1,18 @@
+﻿{
+  "rules": {
+    ".read": "now < 1700200800000",
+    ".write": "now < 1700200800000",
+    "users": {
+      "$userid": {
+        "expenses": {
+          "$expenseid": {
+            ".indexOn": [
+              "quantity",
+              "tag"
+            ]
+          }
+        }
+      }
+    }
+  }
+}

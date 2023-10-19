@@ -6,16 +6,20 @@ from TelegramModules.Finances.expenses_telegram_conversation import (get_convers
                                                                      get_conversation_handler_expenses_edit)
 import os
 from TelegramModules.Finances.expenses_telegram_utils import button_query_handler
+import firebase_admin
 
 
-async def hello(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    await update.message.reply_text(f'Hello {update.effective_user.first_name}')
+FIREBASE_DB_URL = "https://telegramohmsbot-default-rtdb.firebaseio.com/"
+FIREBASE_KEYS_PATH = "Info/firebase_key.json"
 
-FILENAME = "Info/api_keys.json"
+API_KEYS_PATH = "Info/api_keys.json"
 telegram_token = ""
 
-if os.path.isfile(FILENAME):
-    with open(FILENAME, "r", encoding="utf-8-sig") as api_keys_file:
+cred = firebase_admin.credentials.Certificate(FIREBASE_KEYS_PATH)
+firebase_admin.initialize_app(cred, {'databaseURL': FIREBASE_DB_URL})
+
+if os.path.isfile(API_KEYS_PATH):
+    with open(API_KEYS_PATH, "r", encoding="utf-8-sig") as api_keys_file:
         api_keys = json.load(api_keys_file)
         telegram_token = api_keys["api_id"]
 else:
@@ -23,7 +27,6 @@ else:
 
 app = ApplicationBuilder().token(telegram_token).arbitrary_callback_data(True).build()
 
-app.add_handler(CommandHandler("hello", hello))
 app.add_handler(CommandHandler("gasto", save_expense))
 app.add_handler(CommandHandler("leer", load_expense))
 app.add_handler(get_conversation_handler_expenses_add())

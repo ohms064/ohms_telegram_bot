@@ -4,10 +4,11 @@ from json import JSONDecodeError
 
 from Modules.Finances.expenses_data import Expenses
 import json
-import os
+import pytz
 from datetime import datetime
 from icecream import ic
 import dateutil.parser
+from firebase_admin import db
 
 
 def decode_time(target: dict):
@@ -20,7 +21,7 @@ def get_filename(user_id: int, month: int = 0, year: int = 0, date: datetime = N
     if date is not None:
         month = date.month
         year = date.year
-    return f"{user_id}_{month}_{year}_expenses.json"
+    return f"users/{user_id}/expenses/{year}{month}"
 
 
 def open_expenses_file(filename: str) -> dict[int, Expenses]:
@@ -46,38 +47,33 @@ def open_expenses_file(filename: str) -> dict[int, Expenses]:
 
 def get_expenses(user_id: int, month: int, year: int, tag: str = "") -> dict[int, Expenses]:
     ic(f"Getting expenses for {month}/{year}. With tag {tag}.")
-    FILENAME = get_filename(user_id, month, year)
-    result = {}
-    if not os.path.isfile(FILENAME):
-        return result
-    result = open_expenses_file(FILENAME)
+    firebase_path = get_filename(user_id, month, year)
+    firebase_ref = db.reference(firebase_path)
 
     if tag:
-        result = {key: value for key, value in result.items() if value.tag == tag}
+        firebase_ref = firebase_ref.order_by_child("tag").equal_to(tag)
+
+    result = {}
+    firebase_result = firebase_ref.get()
+    for key in firebase_result:
+        expenses_dict = firebase_result[key]
+        result[key] = Expenses(time=datetime.fromisoformat(expenses_dict["time"]), quantity=expenses_dict["quantity"],
+                               reason=expenses_dict["reason"], tag=expenses_dict["tag"])
 
     return result
 
 
 def write_expense(user_id: int, expense_to_write: Expenses):
     ic(f"Writing expense")
-    FILENAME = get_filename(user_id, date=expense_to_write.time)
-    expenses = get_expenses(user_id, expense_to_write.time.month, expense_to_write.time.year)
-    new_key = 1
-    if len(expenses) != 0:
-        new_key = max(list(expenses.keys())) + 1
-    expenses[new_key] = expense_to_write
-    expenses = {key: exp.__dict__ for key, exp in expenses.items()}
+    firebase_path = get_filename(user_id, date=expense_to_write.time)
+    firebase_ref = db.reference(firebase_path)
 
-    with open(FILENAME, "w") as expense_file:
-        json.dump(expenses, expense_file, default=str, indent=4, sort_keys=True)
+    expense_dict = Expenses(**expense_to_write.__dict__)
+    expense_dict.time = expense_to_write.time.isoformat()
+    firebase_ref.push().update(expense_dict.__dict__)
 
 
-def delete_expense(user_id: int, month: int, year: int, expense_id: int) -> None:
-    filename = get_filename(user_id, month, year)
-    expenses = get_expenses(user_id, month, year)
-    if expense_id not in expenses:
-        ic("Couldn't delete expense because it couldn't be found")
-        return
-    del expenses[expense_id]
-    with open(filename, "w") as file:
-        json.dump(expenses, file)
+def delete_expense(user_id: int, month: int, year: int, expense_id: str) -> None:
+    firebase_path = get_filename(user_id, month, year)
+    firebase_ref = db.reference(firebase_path)
+    firebase_ref.child(expense_id).delete()

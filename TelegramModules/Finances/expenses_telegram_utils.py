@@ -7,7 +7,7 @@ from Modules.Finances.expenses_commonutils import delete_expense
 DELETE_ACTION = 1
 
 
-def create_expense_keyboard_markup(user_id: int, month: int, year: int, expense_id: int) -> InlineKeyboardMarkup:
+def create_expense_keyboard_markup(user_id: int, month: int, year: int, expense_id: str) -> InlineKeyboardMarkup:
     keyboard = [
         [
             create_delete_button(user_id, month, year, expense_id)
@@ -16,7 +16,7 @@ def create_expense_keyboard_markup(user_id: int, month: int, year: int, expense_
     return InlineKeyboardMarkup(keyboard)
 
 
-def create_delete_button(user_id: int, month: int, year: int, expense_id: int) -> InlineKeyboardButton:
+def create_delete_button(user_id: int, month: int, year: int, expense_id: str) -> InlineKeyboardButton:
     action = create_query_action(DELETE_ACTION, user_id=user_id, month=month, year=year, expense_id=expense_id)
     return InlineKeyboardButton("Borrar", callback_data=json.dumps(action))
 
