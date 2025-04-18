@@ -18,11 +18,14 @@ telegram_token = ""
 cred = firebase_admin.credentials.Certificate(FIREBASE_KEYS_PATH)
 firebase_admin.initialize_app(cred, {'databaseURL': FIREBASE_DB_URL})
 
+telegram_token: str
+
 if os.path.isfile(API_KEYS_PATH):
     with open(API_KEYS_PATH, "r", encoding="utf-8-sig") as api_keys_file:
         api_keys = json.load(api_keys_file)
         telegram_token = api_keys["api_id"]
-else:
+
+if not telegram_token:
     telegram_token = os.getenv("telegram_key")
 
 app = ApplicationBuilder().token(telegram_token).arbitrary_callback_data(True).build()
